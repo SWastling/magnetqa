@@ -6,13 +6,13 @@ path = getDirectory("home")
 Dialog.create("Geometric Linearity Distortion and Slice Width Test Details");
 Dialog.addFile("Image:", path);
 Dialog.addDirectory("Results directory:", path);
-Dialog.addChoice("Slice orientation:", newArray("TRA", "COR", "SAG"));
-Dialog.addChoice("RF coil:", newArray("BC", "HC"));
+Dialog.addRadioButtonGroup("Slice orientation:", newArray("TRA", "COR", "SAG"), 1, 3, "TRA");
+Dialog.addRadioButtonGroup("RF coil:", newArray("BC", "HC"), 1, 2, "BC");
 Dialog.show();
 im_fp = Dialog.getString();
 output_dp = Dialog.getString();
-slice_orientation = Dialog.getChoice();
-rf_coil = Dialog.getChoice();
+slice_orientation = Dialog.getRadioButton;
+rf_coil = Dialog.getRadioButton;
 
 // create a directory to store the screenshots and csv results files
 results_dp = output_dp + File.separator + "Analysis Results";
@@ -23,9 +23,9 @@ open(im_fp);
 rename("im");
 
 Dialog.create("Direction of slice profiles");
-Dialog.addChoice("Direction fo slice profiles:", newArray("Horizontal", "Vertical"));
+Dialog.addRadioButtonGroup("Direction of slice profiles:", newArray("Horizontal", "Vertical"), 1, 2, "Horizontal");
 Dialog.show();
-sp_direction = Dialog.getChoice();
+sp_direction = Dialog.getRadioButton;
 
 // find the locations of the nine rods in the image
 // create a duplicate of im and then binarise it i.e. bright phantom with dark rods

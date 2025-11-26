@@ -6,13 +6,13 @@ path = getDirectory("home")
 Dialog.create("Slice Position Test Details");
 Dialog.addDirectory("Directory containing DICOM images:", path);
 Dialog.addDirectory("Results directory:", path);
-Dialog.addChoice("Slice orientation:", newArray("TRA", "COR", "SAG"));
-Dialog.addChoice("RF coil:", newArray("BC", "HC"));
+Dialog.addRadioButtonGroup("Slice orientation:", newArray("TRA", "COR", "SAG"), 1, 3, "TRA");
+Dialog.addRadioButtonGroup("RF coil:", newArray("BC", "HC"), 1, 2, "BC");
 Dialog.show();
 im_dp = Dialog.getString();
 output_dp = Dialog.getString();
-slice_orientation = Dialog.getChoice();
-rf_coil = Dialog.getChoice();
+slice_orientation = Dialog.getRadioButton;
+rf_coil = Dialog.getRadioButton;
 
 // create a directory to store the screenshots and csv results files
 results_dp = output_dp + File.separator + "Analysis Results";
