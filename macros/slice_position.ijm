@@ -14,21 +14,42 @@ output_dp = Dialog.getString();
 slice_orientation = Dialog.getRadioButton;
 rf_coil = Dialog.getRadioButton;
 
-// create a directory to store the screenshots and csv results files
-results_dp = output_dp + File.separator + "Analysis Results";
-File.makeDirectory(results_dp);
+// Define directory paths
+analysis_results_dp = output_dp + File.separator + "Analysis_Results";
+sp_results_dp = analysis_results_dp + File.separator + "Slice_Position";
+temp_screenshots_dp = sp_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_POSITION_LINES"
 
-temp_screenshots_dp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_POSITION_LINES"
+// Define file paths
+sp_results_fp_stem = sp_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_POSITION";
+sp_results_csv_fp = sp_results_fp_stem + ".csv";
+screengrab_montage_fp = sp_results_fp_stem "_LINES.png";
+
+// Check if results already exist
+if (File.exists(sp_results_csv_fp))
+	exit(sp_results_csv_fp + " already exists, exiting");
+
+// create directory to store all results
+File.makeDirectory(analysis_results_dp);
+if (!File.exists(analysis_results_dp))
+	exit("Error: unable to create directory " + analysis_results_dp);
+
+// create directory to store the screenshots and csv results files for slice position
+File.makeDirectory(sp_results_dp);
+if (!File.exists(sp_results_dp))
+	exit("Error: unable to create directory " + sp_results_dp);
+
+// create directory to store the temp screenshots
 File.makeDirectory(temp_screenshots_dp);
+if (!File.exists(temp_screenshots_dp))
+	exit("Error: unable to create directory " + temp_screenshots_dp);
 
 // open the set of DICOM files in im_dp and rename them im
 open(im_dp);
 rename("im");
 
 // create a csv file to store the results of the slice position measurements
-slice_position_results_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_POSITION.csv";
-f_slice_position_csv = File.open(slice_position_results_csv_fp);
-print(f_slice_position_csv, "Slice,Distance (mm),Mean Test Object Distance (mm)");
+f_sp_csv = File.open(sp_results_csv_fp);
+print(f_sp_csv, "Slice,Distance (mm),Mean Test Object Distance (mm)");
 
 // define the vertices of the default polygon to encompass the 6 rods in the phantom
 polygon_x1 = 200;
@@ -173,7 +194,7 @@ for (sl = 1; sl < numberOfStackSlices + 1; sl++) {
 		mean_distance_between_parallel_rods = (distance_between_top_parallel_rods + distance_between_bottom_parallel_rods) / 2;
 
 		// save the distances to the csv file
-		print(f_slice_position_csv, sl + "," + d2s(distance_between_angled_rods,3) + "," + d2s(mean_distance_between_parallel_rods,3));
+		print(f_sp_csv, sl + "," + d2s(distance_between_angled_rods,3) + "," + d2s(mean_distance_between_parallel_rods,3));
 
 		run("Clear Results");		
 		roiManager("reset");
@@ -193,22 +214,25 @@ for (sl = 1; sl < numberOfStackSlices + 1; sl++) {
 		polygon_y6 = y3;
 
 	} else {
-		print(f_slice_position_csv, sl + ",," );
+		print(f_sp_csv, sl + ",," );
 
 		run("Capture Image");
 		screengrab_fp = temp_screenshots_dp + File.separator + "SL_" + String.pad(sl,2) + ".png";
 		saveAs("PNG", screengrab_fp);
 	}
 }
-File.close(f_slice_position_csv)
-close("im")
+File.close(f_sp_csv);
+close("im");
 
 run("Images to Stack", "use");
 run("Make Montage...", "columns=6 rows=5 scale=1 label");
-screengrab_montage_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_POSITION_LINES.png";
 saveAs("PNG", screengrab_montage_fp);
 
-File.delete(temp_screenshots_dp)
+// Delete the files and the temp_screenshots directory
+screenshots_list = getFileList(temp_screenshots_dp);
+for (i = 0; i < screenshots_list.length; i++)
+	ok = File.delete(temp_screenshots_dp + File.separator + screenshots_list[i]);
+File.delete(temp_screenshots_dp);
 
 
 

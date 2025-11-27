@@ -16,9 +16,50 @@ output_dp = Dialog.getString();
 slice_orientation = Dialog.getRadioButton;
 rf_coil = Dialog.getRadioButton;
 
-// create a directory to store the screenshots and csv results files
-results_dp = output_dp + File.separator + "Analysis Results";
-File.makeDirectory(results_dp);
+// Define directory paths
+analysis_results_dp = output_dp + File.separator + "Analysis_Results";
+snr_results_dp = analysis_results_dp + File.separator + "SNR";
+uniformity_results_dp = analysis_results_dp + File.separator + "Uniformity";
+
+// Define file paths
+snr_results_fp_stem = snr_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR";
+snr_results_csv_fp = snr_results_fp_stem + ".csv";
+snr_rois_fp = snr_results_fp_stem + "_ROIs.zip";
+screengrab_im_1_rois_fp = snr_results_fp_stem + "_Image_1_ROIs.png";
+screengrab_im_2_rois_fp = snr_results_fp_stem + "_Image_2_ROIs.png";
+screengrab_diff_im_rois_fp = snr_results_fp_stem + "_Difference_Image_ROIs.png";
+screengrab_snr_images_with_rois_fp = snr_results_fp_stem + "_Images_with_ROIs.png";
+
+uni_results_fp_stem = uniformity_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_UNIFORMITY";
+horizontal_uniformity_results_csv_fp = uni_results_fp_stem + "_HORIZONTAL.csv";
+vertical_uniformity_results_csv_fp = uni_results_fp_stem + "_VERTICAL.csv";
+uniformity_rois_fp = uni_results_fp_stem + "_ROIs.zip";
+screengrab_im_1_uniformity_rois_fp = uni_results_fp_stem + "_ROIs.png";
+
+// Check if results already exist
+if (File.exists(snr_results_csv_fp))
+	exit(snr_results_csv_fp + " already exists, exiting");
+
+if (File.exists(horizontal_uniformity_results_csv_fp))
+	exit(horizontal_uniformity_results_csv_fp + " already exists, exiting");
+
+if (File.exists(vertical_uniformity_results_csv_fp))
+	exit(vertical_uniformity_results_csv_fp + " already exists, exiting");
+
+// create directory to store all results
+File.makeDirectory(analysis_results_dp);
+if (!File.exists(analysis_results_dp))
+	exit("Error: unable to create directory " + analysis_results_dp);
+
+// create directory to store the screenshots and csv results files for SNR
+File.makeDirectory(snr_results_dp);
+if (!File.exists(snr_results_dp))
+	exit("Error: unable to create directory " + snr_results_dp);
+
+// create directory to store the screenshots and csv results files for uniformity
+File.makeDirectory(uniformity_results_dp);
+if (!File.exists(uniformity_results_dp))
+	exit("Error: unable to create directory " + uniformity_results_dp);
 
 // open the first image and rename it Image_1
 open(im_1_fp);
@@ -73,7 +114,6 @@ roiManager("Select", newArray(0, 1, 2, 3, 4));
 roiManager("Delete");
 
 // open a csv file to store the mean signal in each ROI and the standard deviation of the signal in the difference image in each ROI
-snr_results_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR.csv";
 f_snr_csv = File.open(snr_results_csv_fp);
 print(f_snr_csv, "ROI,Signal Mean,Difference Std Dev");
 
@@ -103,34 +143,30 @@ for (i=0; i<5; i++){
 File.close(f_snr_csv)
 
 // save the SNR ROIs in a zip file
-snr_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR_ROIs.zip";
 roiManager("save", snr_rois_fp)
 
 // create montage of images with ROIs overlaid and save a screengrab
 selectWindow("Image_1");
 roiManager("Show All");
 run("Capture Image");
-screengrab_im_1_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR_Image_1_ROIs.png";
 saveAs("PNG", screengrab_im_1_rois_fp);
 close("Image_1");
 
 selectWindow("Image_2");
 roiManager("Show All");
 run("Capture Image");
-screengrab_im_2_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR_Image_2_ROIs.png";
+
 saveAs("PNG", screengrab_im_2_rois_fp);
 close("Image_2");
 
 selectWindow("Difference_Image");
 roiManager("Show All");
 run("Capture Image");
-screengrab_diff_im_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR_Difference_Image_ROIs.png";
 saveAs("PNG", screengrab_diff_im_rois_fp);
 close("Difference_Image");
 
 run("Images to Stack", "use");
 run("Make Montage...", "columns=3 rows=1 scale=1 label");
-screengrab_snr_images_with_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SNR_Images_with_ROIs.png";
 saveAs("PNG", screengrab_snr_images_with_rois_fp);
 
 close("*");
@@ -177,7 +213,6 @@ roiManager("Select", 1);
 horizontal_profile = getProfile();
 
 // save the horizontal profile to a csv file
-horizontal_uniformity_results_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_UNIFORMITY_HORIZONTAL.csv";
 f_hor_uni = File.open(horizontal_uniformity_results_csv_fp);
 print(f_hor_uni, "Profile Data, Central ROI Mean");
 for (i=0; i<horizontal_profile.length; i++)
@@ -192,7 +227,6 @@ setKeyDown("alt");
 vertical_profile = getProfile();
 
 // save the horizontal profile to a csv file
-vertical_uniformity_results_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_UNIFORMITY_VERTICAL.csv";
 f_vert_uni = File.open(vertical_uniformity_results_csv_fp);
 print(f_vert_uni, "Profile Data, Central ROI Mean");
 for (i=0; i<vertical_profile.length; i++)
@@ -200,14 +234,12 @@ for (i=0; i<vertical_profile.length; i++)
 File.close(f_vert_uni)
 
 // save the uniformity ROIs to a zip file
-uniformity_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_UNIFORMITY_ROIs.zip";
 roiManager("save", uniformity_rois_fp);
 
 // save a screenshot of the ROIs overlaid on Image_1
 selectWindow("Image_1");
 roiManager("Show All");
 run("Capture Image");
-screengrab_im_1_uniformity_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_UNIFORMITY_ROIs.png";
 saveAs("PNG", screengrab_im_1_uniformity_rois_fp);
 
 // close any open images, reset results window etc...

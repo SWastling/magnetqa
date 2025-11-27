@@ -14,9 +14,47 @@ output_dp = Dialog.getString();
 slice_orientation = Dialog.getRadioButton;
 rf_coil = Dialog.getRadioButton;
 
-// create a directory to store the screenshots and csv results files
-results_dp = output_dp + File.separator + "Analysis Results";
-File.makeDirectory(results_dp);
+// Define directory paths
+analysis_results_dp = output_dp + File.separator + "Analysis_Results";
+geo_lin_dist_results_dp = analysis_results_dp + File.separator + "Geometric_Linearity_and_Distortion";
+slice_width_results_dp = analysis_results_dp + File.separator + "Slice_Width";
+
+// Define file paths
+geo_results_fp_stem = geo_lin_dist_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_GEOMETRIC_LINEARITY_DISTORTION";
+lin_dist_csv_fp = geo_results_fp_stem + ".csv";
+lin_dist_lines_fp = geo_results_fp_stem + "_LINES.zip";
+screengrab_lin_dist_fp = geo_results_fp_stem + "_LINES.png";
+
+slice_width_results_fp_stem = slice_width_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_WIDTH";
+sp_1_csv_fp = slice_width_results_fp_stem + "_1.csv";
+sp_2_csv_fp = slice_width_results_fp_stem + "_2.csv";
+sp_rois_fp = slice_width_results_fp_stem + "_ROIs.zip";
+screengrab_slice_profile_fp = slice_width_results_fp_stem + "_ROIs.png";
+
+// Check if results already exist
+if (File.exists(lin_dist_csv_fp))
+	exit(lin_dist_csv_fp + " already exists, exiting");
+
+if (File.exists(sp_1_csv_fp))
+	exit(sp_1_csv_fp + " already exists, exiting");
+
+if (File.exists(sp_2_csv_fp))
+	exit(sp_2_csv_fp + " already exists, exiting")
+
+// create directory to store all results
+File.makeDirectory(analysis_results_dp);
+if (!File.exists(analysis_results_dp))
+	exit("Error: unable to create directory " + analysis_results_dp);
+
+// create directory to store the screenshots and csv results files for linearity and distortion
+File.makeDirectory(geo_lin_dist_results_dp);
+if (!File.exists(geo_lin_dist_results_dp))
+	exit("Error: unable to create directory " + geo_lin_dist_results_dp);
+
+// create directory to store the screenshots and csv results files for slice width
+File.makeDirectory(slice_width_results_dp);
+if (!File.exists(slice_width_results_dp))
+	exit("Error: unable to create directory " + slice_width_results_dp);
 
 // open the image and rename it im
 open(im_fp);
@@ -117,11 +155,9 @@ for (i = 0; i < 6; i++) {
 roiManager("Select", newArray(0, 1, 2, 3, 4, 5));
 run("Set Measurements...", "redirect=None decimal=3");
 roiManager("Measure");
-lin_dist_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_GEOMETRIC_LINEARITY_DISTORTION.csv";
 saveAs("Results", lin_dist_csv_fp);
 
 // save the lines in a zip file
-lin_dist_lines_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_GEOMETRIC_LINEARITY_DISTORTION_LINES.zip"
 roiManager("save", lin_dist_lines_fp)
 
 // zoom the image to 100%
@@ -131,7 +167,6 @@ run("Set... ", "zoom=100 x=128 y=128");
 selectWindow("im");
 roiManager("Show All");
 run("Capture Image");
-screengrab_lin_dist_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_GEOMETRIC_LINEARITY_DISTORTION_LINES.png";
 saveAs("PNG", screengrab_lin_dist_fp);
 
 // remove the lines used to measure the distortion-linearity
@@ -207,24 +242,21 @@ run("Clear Results");
 for (i=0; i < profile_1.length; i++)
 	setResult("Value", i, profile_1[i]);
 updateResults;
-sp_1_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_WIDTH_1.csv";
 saveAs("Results", sp_1_csv_fp);
 
 run("Clear Results");
 for (i=0; i < profile_2.length; i++)
 	setResult("Value", i, profile_2[i]);
 updateResults;
-sp_2_csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_WIDTH_2.csv";
 saveAs("Results", sp_2_csv_fp);
 
 // save the slice profile ROIs in a zip file
-sp_rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_WIDTH_ROIs.zip";
-roiManager("save", sp_rois_fp);
 
+roiManager("save", sp_rois_fp);
 // save a screenshot of the slice profile ROIs overlaid on im
 roiManager("Show All");
 run("Capture Image");
-screengrab_slice_profile_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_SLICE_WIDTH_ROIs.png";
+
 saveAs("PNG", screengrab_slice_profile_fp);
 
 // close any open images, reset results window etc...

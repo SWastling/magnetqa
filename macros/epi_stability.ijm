@@ -14,9 +14,29 @@ output_dp = Dialog.getString();
 slice_orientation = Dialog.getRadioButton;
 rf_coil = Dialog.getRadioButton;
 
-// create a directory to store the screenshots and csv results files
-results_dp = output_dp + File.separator + "Analysis Results";
-File.makeDirectory(results_dp);
+// Define directory paths
+analysis_results_dp = output_dp + File.separator + "Analysis_Results";
+epi_stab_results_dp = analysis_results_dp + File.separator + "EPI_Stability";
+
+// Define file paths
+results_fp_stem = epi_stab_results_dp + File.separator + rf_coil + "_" + slice_orientation + "_EPI_STABILITY";
+csv_fp = results_fp_stem + ".csv";
+rois_fp = results_fp_stem + "_ROI.zip";
+screengrab_roi_fp = results_fp_stem + "_ROI.png";
+
+// Check if results already exist
+if (File.exists(csv_fp))
+	exit(csv_fp + " already exists, exiting");
+
+// create directory to store all results
+File.makeDirectory(analysis_results_dp);
+if (!File.exists(analysis_results_dp))
+	exit("Error: unable to create directory " + analysis_results_dp);
+
+// create directory to store the screenshots and csv results files
+File.makeDirectory(epi_stab_results_dp);
+if (!File.exists(epi_stab_results_dp))
+	exit("Error: unable to create directory " + epi_stab_results_dp);
 
 // open the set of DICOM files (images 21-120) in im_dp and rename them im
 File.openSequence(im_dp, " start=21");
@@ -38,18 +58,15 @@ run("Set Measurements...", " mean redirect=None decimal=3");
 roiManager("Multi Measure");
 wait(100);
 
-csv_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_EPI_STABILITY.csv";
 saveAs("Results", csv_fp);
 
 // save the uniformity ROIs to a zip file
-rois_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_EPI_STABILITY_ROI.zip";
 roiManager("save", rois_fp);
 
 // save a screenshot of the ROIs overlaid on Image_1
 selectWindow("im");
 roiManager("Show All");
 run("Capture Image");
-screengrab_roi_fp = results_dp + File.separator + rf_coil + "_" + slice_orientation + "_EPI_STABILITY_ROI.png";
 saveAs("PNG", screengrab_roi_fp);
 
 // close any open images, reset results window etc...
