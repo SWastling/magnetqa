@@ -33,7 +33,7 @@ Use the following pulse sequence parameters:
 | Slice orientation| TRA, COR and SAG |
 | Number of slices | 1 |
 | Matrix size | 256 by 256 |
-| Field-of-view | 250 by 250 mm |
+| Field-of-view | 256 by 256 mm |
 | Bandwidth | System dependent (see below) |
 | Image Filter| 2D Distortion Correction|
 | Acquisition time | 4:16|
